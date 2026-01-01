@@ -1,0 +1,73 @@
+---
+# Ansible Playbook - Initial Arista Switch Setup
+# File: ansible/playbooks/initial_setup.yml
+# Description: Bootstrap configuration for newly deployed Arista switches
+
+- name: Initial Arista Switch Configuration
+  hosts: arista_switches
+  gather_facts: no
+  
+  tasks:
+    - name: Set hostname
+      arista.eos.eos_system:
+        hostname: "{{ switch_hostname }}"
+      tags: [hostname]
+
+    - name: Configure management interface
+      arista.eos.eos_l3_interfaces:
+        config:
+          - name: Management1
+            ipv4:
+              - address: "{{ management_ip }}"
+      tags: [management]
+
+    - name: Configure default route
+      arista.eos.eos_static_routes:
+        config:
+          - address_families:
+              - afi: ipv4
+                routes:
+                  - dest: 0.0.0.0/0
+                    next_hops:
+                      - forward_router_address: "{{ management_gateway }}"
+      tags: [routing]
+
+    - name: Configure DNS servers
+      arista.eos.eos_system:
+        name_servers: "{{ dns_servers }}"
+      tags: [dns]
+
+    - name: Configure NTP servers
+      arista.eos.eos_ntp_global:
+        servers:
+          - server: "{{ item }}"
+            prefer: "{{ true if item == ntp_servers[0] else false }}"
+      loop: "{{ ntp_servers }}"
+      tags: [ntp]
+
+    - name: Set timezone
+      arista.eos.eos_config:
+        lines:
+          - "clock timezone {{ timezone }}"
+      tags: [timezone]
+
+    - name: Enable SSH with idle timeout
+      arista.eos.eos_config:
+        lines:
+          - management ssh
+          - "  idle-timeout {{ ssh_idle_timeout }}"
+      tags: [ssh]
+
+    - name: Create VLANs
+      arista.eos.eos_vlans:
+        config: "{{ vlans }}"
+      tags: [vlans]
+
+    - name: Save configuration
+      arista.eos.eos_config:
+        save_when: modified
+      tags: [save]
+
+    - name: Display completion message
+      debug:
+        msg: "Initial configuration complete for {{ inventory_hostname }}"

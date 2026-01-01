@@ -336,9 +336,9 @@ This repository is maintained by the **Atlanta AI & Robotics Initiative (AARI)**
 
 ### Connect
 
-- Website: [Coming Soon]
+- Website: [https://atlanta-robotics.org/]
 - GitHub: [@aari-initiative](https://github.com/aari-initiative)
-- LinkedIn: [AARI LinkedIn]
+- LinkedIn: [https://www.linkedin.com/company/atlanta-ai-robotics-initiative]
 
 ---
 
